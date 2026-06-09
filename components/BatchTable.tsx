@@ -10,22 +10,40 @@ export interface BatchRow {
   state: 'pending' | 'done' | 'error';
   verdict?: Verdict;
   error?: string;
+  previewUrl?: string;
 }
 
 export function BatchTable({ rows }: { rows: BatchRow[] }) {
   const [problemsOnly, setProblemsOnly] = useState(false);
   const [openRow, setOpenRow] = useState<number | null>(null);
 
-  const doneCount = rows.filter((r) => r.state !== 'pending').length;
   const visible = rows
     .map((row, i) => ({ row, i }))
     .filter(({ row }) => !problemsOnly || row.state === 'error' || (row.verdict && row.verdict.overall !== 'pass'));
 
+  // Derive summary counts from rows — no new state, updates mid-stream as rows land.
+  const failCount = rows.filter((r) => r.verdict?.overall === 'fail').length;
+  const reviewCount = rows.filter((r) => r.verdict?.overall === 'review').length;
+  const passCount = rows.filter((r) => r.verdict?.overall === 'pass').length;
+  const errorCount = rows.filter((r) => r.state === 'error').length;
+  const pendingCount = rows.filter((r) => r.state === 'pending').length;
+
+  const summarySegments: React.ReactNode[] = [];
+  if (failCount > 0) summarySegments.push(<span key="fail" className="text-red-700 font-bold">{failCount} Fail</span>);
+  if (reviewCount > 0) summarySegments.push(<span key="review" className="text-amber-600 font-bold">{reviewCount} Needs Review</span>);
+  if (passCount > 0) summarySegments.push(<span key="pass" className="text-green-700 font-bold">{passCount} Pass</span>);
+  if (errorCount > 0) summarySegments.push(<span key="error" className="text-gray-500 font-bold">{errorCount} Errors</span>);
+  if (pendingCount > 0) summarySegments.push(<span key="pending" className="text-gray-400">{pendingCount} still checking</span>);
+
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <p className="text-xl font-semibold text-gray-700">
-          {doneCount} of {rows.length} checked
+        <p className="text-xl text-gray-700">
+          {summarySegments.reduce<React.ReactNode[]>((acc, seg, idx) => {
+            if (idx > 0) acc.push(<span key={`dot-${idx}`} className="mx-2 text-gray-400">&middot;</span>);
+            acc.push(seg);
+            return acc;
+          }, [])}
         </p>
         <label className="flex cursor-pointer items-center gap-3 text-xl">
           <input
@@ -61,10 +79,14 @@ export function BatchTable({ rows }: { rows: BatchRow[] }) {
               }}
             >
               <td className="py-4 pr-4 text-xl font-medium text-gray-900">
-                {row.fileName}
+                <span className="flex items-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- blob URLs are not supported by next/image */}
+                  {row.previewUrl && <img src={row.previewUrl} alt="" className="mr-3 inline-block h-12 w-12 rounded border border-gray-200 bg-white object-contain align-middle" />}
+                  {row.fileName}
+                </span>
                 {openRow === i && row.verdict && (
                   <div className="mt-3 cursor-default" onClick={(e) => e.stopPropagation()}>
-                    <ResultCard verdict={row.verdict} fileName={row.fileName} />
+                    <ResultCard verdict={row.verdict} fileName={row.fileName} previewUrl={row.previewUrl} />
                   </div>
                 )}
               </td>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ExpectedValues, Verdict } from '@/lib/types';
 import { downscaleImage } from '@/lib/client/downscale';
 import { runPool } from '@/lib/client/pool';
@@ -28,13 +28,28 @@ export default function Home() {
   const [csvMap, setCsvMap] = useState<Map<string, ExpectedValues> | null>(null);
   const [singleExpected, setSingleExpected] = useState<ExpectedValues>({});
   const inputRef = useRef<HTMLInputElement>(null);
+  // Tracks blob URLs for the active batch so they can be revoked on next batch or unmount.
+  const previewUrlsRef = useRef<string[]>([]);
+
+  // Revoke all active preview URLs on unmount to avoid memory leaks.
+  useEffect(() => {
+    return () => {
+      previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, []);
 
   const handleFiles = useCallback(
     async (files: File[]) => {
       const images = files.filter((f) => f.type.startsWith('image/'));
       if (!images.length || busy) return;
       setBusy(true);
-      setRows(images.map((f) => ({ fileName: f.name, state: 'pending' as const })));
+
+      // Revoke previous batch's URLs before creating new ones.
+      previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      const newPreviewUrls = images.map((f) => URL.createObjectURL(f));
+      previewUrlsRef.current = newPreviewUrls;
+
+      setRows(images.map((f, idx) => ({ fileName: f.name, state: 'pending' as const, previewUrl: newPreviewUrls[idx] })));
 
       const expectedFor = (f: File): ExpectedValues | undefined =>
         images.length === 1
@@ -155,7 +170,7 @@ export default function Home() {
         <p className="rounded-xl bg-red-50 p-5 text-xl font-semibold text-red-800">{single.error}</p>
       )}
       {single?.state === 'done' && single.verdict && (
-        <ResultCard verdict={single.verdict} fileName={single.fileName} />
+        <ResultCard verdict={single.verdict} fileName={single.fileName} previewUrl={single.previewUrl} />
       )}
       {rows.length > 1 && <BatchTable rows={rows} />}
     </main>

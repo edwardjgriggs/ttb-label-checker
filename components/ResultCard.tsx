@@ -1,9 +1,11 @@
 import type { Verdict } from '@/lib/types';
 import { StatusBadge } from './StatusBadge';
 
-export function ResultCard({ verdict, fileName }: { verdict: Verdict; fileName: string }) {
+export function ResultCard({ verdict, fileName, previewUrl }: { verdict: Verdict; fileName: string; previewUrl?: string }) {
   return (
     <div className="rounded-xl border-2 border-gray-200 bg-white p-6 shadow-sm">
+      {/* eslint-disable-next-line @next/next/no-img-element -- blob URLs are not supported by next/image */}
+      {previewUrl && <img src={previewUrl} alt={'Label image: ' + fileName} className="mb-4 max-h-64 w-full rounded-lg border border-gray-200 bg-white object-contain" />}
       <div className="mb-4 flex items-center justify-between gap-4">
         <h2 className="truncate text-2xl font-bold text-gray-900">{fileName}</h2>
         <StatusBadge status={verdict.overall} />
