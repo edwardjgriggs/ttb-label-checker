@@ -96,6 +96,7 @@ What changes before real deployment:
 
 - **In-memory rate limiter is per-instance.** On Vercel serverless, each warm instance has an independent counter. Multiple concurrent instances each see a fraction of traffic. The real cost-abuse backstop for the prototype is the OpenAI spending cap, not the rate limiter. Documented; not fixed.
 - **Payload size check runs after body buffering.** `req.formData()` buffers the full body before the 6MB size check runs. Vercel's 4.5MB platform-level limit is the effective guard for oversized requests. Documented; not fixed for the prototype.
+- **Known dependency advisory.** `npm audit` reports a moderate advisory in the `postcss` version bundled inside Next.js (no stable Next release carries the patch yet). The vulnerable path requires stringifying untrusted CSS; this app's PostCSS usage is build-time Tailwind compilation of its own stylesheets, so the advisory is not exploitable here. Exported batch CSVs neutralize Excel formula injection, and all responses carry baseline security headers (nosniff, frame-deny, referrer and permissions policies).
 
 ---
 
