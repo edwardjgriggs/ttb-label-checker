@@ -10,7 +10,11 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
 
+/* Plain @theme (not inline) so these emit real CSS variables at runtime
+   in addition to generating utilities like bg-paper / text-bark. */
+@theme {
   /* Label-echo palette */
   --color-paper: #faf7ef;
   --color-ink: #2e2316;
