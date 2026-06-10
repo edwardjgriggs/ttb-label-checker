@@ -83,8 +83,8 @@ const csvContent = [
   'riverbend.png,Riverbend Reserve,Straight Rye Whiskey,40,375 mL',
   'titlecase-warning.png,OLD TOM DISTILLERY,Kentucky Straight Bourbon Whiskey,45,750 mL',
   'missing-warning.png,OLD TOM DISTILLERY,Kentucky Straight Bourbon Whiskey,45,750 mL',
-  'wrong-wording.png,OLD TOM DISTILLERY,Kentucky Straight Bourbon Whiskey,45,750 mL',
   'no-abv.png,OLD TOM DISTILLERY,Kentucky Straight Bourbon Whiskey,45,750 mL',
+  // wrong-wording.png intentionally has no row: demonstrates the silent fallback to rules-only checking
 ].join('\n');
 
 writeFileSync('samples/batch.csv', csvContent);

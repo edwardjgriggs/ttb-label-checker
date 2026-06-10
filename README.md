@@ -19,7 +19,7 @@ Try it with the images in `samples/`:
 | `no-abv.png` | Alcohol content field missing. Fails ABV presence check |
 | `riverbend.png` | Second valid label for batch demos |
 
-`samples/batch.csv` demonstrates the expected-values flow. Drop `valid.png`, `riverbend.png`, and `titlecase-warning.png` together, load the CSV, and those three labels are cross-checked against their CSV rows for brand, class/type, ABV, and net contents. The remaining PNGs have no CSV row and fall back to rules-only checking automatically.
+`samples/batch.csv` demonstrates the expected-values flow. Drop all six PNGs, load the CSV, and five labels are cross-checked against their CSV rows for brand, class/type, ABV, and net contents. `wrong-wording.png` intentionally has no CSV row and falls back to rules-only checking automatically. The "Try a batch of 6" button on the live app runs this exact scenario in one click.
 
 ---
 
