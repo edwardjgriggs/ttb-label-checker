@@ -12,6 +12,16 @@ export function composeOverall(checks: CheckResult[]): CheckStatus {
 }
 
 export function buildVerdict(extracted: ExtractedLabel, expected?: ExpectedValues): Verdict {
+  if (extracted.isAlcoholLabel === false) {
+    return {
+      overall: 'review',
+      checks: [{
+        id: 'subject', label: 'Image Content', status: 'review',
+        reason: "This doesn't appear to be an alcohol beverage label. Check that you uploaded the right image.",
+      }],
+      extracted,
+    };
+  }
   if (!extracted.legible) {
     return {
       overall: 'review',

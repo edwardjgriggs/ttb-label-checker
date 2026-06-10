@@ -13,6 +13,7 @@ export interface WarningExtraction {
 
 export interface ExtractedLabel {
   legible: boolean;
+  isAlcoholLabel: boolean;
   brandName: string | null;
   classType: string | null;
   alcoholContent: string | null; // verbatim, e.g. "45% Alc./Vol. (90 Proof)"

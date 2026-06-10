@@ -15,7 +15,7 @@ describe('OpenAIProvider', () => {
   });
   it('parses a valid extraction response', async () => {
     const payload = {
-      legible: true, brandName: 'X', classType: 'Y', alcoholContent: '45% Alc./Vol.',
+      legible: true, isAlcoholLabel: true, brandName: 'X', classType: 'Y', alcoholContent: '45% Alc./Vol.',
       netContents: '750 mL',
       warning: { present: true, text: 'GOVERNMENT WARNING: ...', headerBold: null },
     };

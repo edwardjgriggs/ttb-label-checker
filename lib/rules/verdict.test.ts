@@ -5,6 +5,7 @@ import type { ExtractedLabel } from '@/lib/types';
 
 const goodLabel = (over: Partial<ExtractedLabel> = {}): ExtractedLabel => ({
   legible: true,
+  isAlcoholLabel: true,
   brandName: 'OLD TOM DISTILLERY',
   classType: 'Kentucky Straight Bourbon Whiskey',
   alcoholContent: '45% Alc./Vol. (90 Proof)',
@@ -43,6 +44,19 @@ describe('buildVerdict', () => {
     const v = buildVerdict(goodLabel({ legible: false }));
     expect(v.overall).toBe('review');
     expect(v.checks[0].reason).toMatch(/read/i);
+  });
+  it('returns review with wrong-image guidance when isAlcoholLabel is false', () => {
+    const v = buildVerdict(goodLabel({ isAlcoholLabel: false }));
+    expect(v.overall).toBe('review');
+    expect(v.checks).toHaveLength(1);
+    expect(v.checks[0].id).toBe('subject');
+    expect(v.checks[0].reason).toMatch(/alcohol beverage label/i);
+  });
+  it('subject gate wins over legibility gate when both isAlcoholLabel:false and legible:false', () => {
+    const v = buildVerdict(goodLabel({ isAlcoholLabel: false, legible: false }));
+    expect(v.overall).toBe('review');
+    expect(v.checks[0].reason).toMatch(/right image/i);
+    expect(v.checks[0].reason).not.toMatch(/re-upload a sharper/i);
   });
 });
 
