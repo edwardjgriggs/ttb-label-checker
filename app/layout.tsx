@@ -33,7 +33,7 @@ export default function RootLayout({
           <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
             <h1
               className="text-2xl font-bold text-ink"
-              style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+              style={{ fontFamily: "var(--font-display)" }}
             >
               TTB Label Checker
             </h1>

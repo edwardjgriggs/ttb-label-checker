@@ -136,6 +136,7 @@ export default function Home() {
                   setSampleError((err as Error).message);
                 }
               }}
+              disabled={busy}
               className="rounded-lg border border-bark bg-white px-5 py-3 text-lg text-bark hover:bg-parchment disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bark focus-visible:ring-offset-2"
             >
               Try a clean label
@@ -150,6 +151,7 @@ export default function Home() {
                   setSampleError((err as Error).message);
                 }
               }}
+              disabled={busy}
               className="rounded-lg border border-bark bg-white px-5 py-3 text-lg text-bark hover:bg-parchment disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bark focus-visible:ring-offset-2"
             >
               Try a problem label
@@ -171,6 +173,7 @@ export default function Home() {
                   setSampleError((err as Error).message);
                 }
               }}
+              disabled={busy}
               className="rounded-lg border border-bark bg-white px-5 py-3 text-lg text-bark hover:bg-parchment disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bark focus-visible:ring-offset-2"
             >
               Try a batch of 6

@@ -29,14 +29,14 @@ export function BatchTable({ rows }: { rows: BatchRow[] }) {
   if (reviewCount > 0) summarySegments.push(<span key="review" className="text-amber-600 font-bold">{reviewCount} Needs Review</span>);
   if (passCount > 0) summarySegments.push(<span key="pass" className="text-green-700 font-bold">{passCount} Pass</span>);
   if (errorCount > 0) summarySegments.push(<span key="error" className="text-bark font-bold">{errorCount} Errors</span>);
-  if (pendingCount > 0) summarySegments.push(<span key="pending" className="text-bark/50">{pendingCount} still checking</span>);
+  if (pendingCount > 0) summarySegments.push(<span key="pending" className="text-bark">{pendingCount} still checking</span>);
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
         <p className="text-xl text-ink">
           {summarySegments.reduce<React.ReactNode[]>((acc, seg, idx) => {
-            if (idx > 0) acc.push(<span key={`dot-${idx}`} className="mx-2 text-bark/40">&middot;</span>);
+            if (idx > 0) acc.push(<span key={`dot-${idx}`} className="mx-2 text-bark">&middot;</span>);
             acc.push(seg);
             return acc;
           }, [])}
@@ -104,7 +104,7 @@ export function BatchTable({ rows }: { rows: BatchRow[] }) {
                 )}
               </td>
               <td className="py-4 align-top">
-                {row.state === 'pending' && <span className="text-xl text-bark/50">Checking…</span>}
+                {row.state === 'pending' && <span className="text-xl text-bark">Checking…</span>}
                 {row.state === 'error' && <span className="text-xl font-semibold text-red-700">{row.error}</span>}
                 {row.state === 'done' && row.verdict && <StatusBadge status={row.verdict.overall} />}
               </td>

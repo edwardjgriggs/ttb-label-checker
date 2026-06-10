@@ -52,7 +52,7 @@ export function ResultCard({ verdict, fileName, previewUrl }: { verdict: Verdict
       <div className="mb-4 flex items-center justify-between gap-4">
         <h2
           className="truncate text-2xl font-bold text-ink"
-          style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+          style={{ fontFamily: "var(--font-display)" }}
         >
           {fileName}
         </h2>

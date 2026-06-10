@@ -34,7 +34,7 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000).
 
 ```bash
-npm test          # 56 unit tests (rules engine, extraction, client utils)
+npm test          # 65 unit tests (rules engine, extraction, client utils)
 npm run samples   # regenerate the sample label PNGs
 ```
 
@@ -44,7 +44,7 @@ npm run samples   # regenerate the sample label PNGs
 
 ### The core design decision: the LLM only reads, code judges
 
-GPT-4o vision transcribes the label verbatim under a strict JSON schema: brand name, class/type, ABV, net contents, the government warning text with capitalization preserved, and a bold-type flag for the warning header. The all-caps check reads the transcribed text itself rather than trusting a model judgment. Every pass/fail decision is made by pure TypeScript rule functions in `lib/rules/`. Those functions have no I/O, no network calls, and 56 unit tests. The verdict for a given set of extracted fields is always the same, regardless of which model run produced them.
+GPT-4o vision transcribes the label verbatim under a strict JSON schema: brand name, class/type, ABV, net contents, the government warning text with capitalization preserved, and a bold-type flag for the warning header. The all-caps check reads the transcribed text itself rather than trusting a model judgment. Every pass/fail decision is made by pure TypeScript rule functions in `lib/rules/`. Those functions have no I/O, no network calls, and 65 unit tests. The verdict for a given set of extracted fields is always the same, regardless of which model run produced them.
 
 ### Zero-entry default flow
 
