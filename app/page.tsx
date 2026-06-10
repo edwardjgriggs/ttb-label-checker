@@ -83,8 +83,7 @@ export default function Home() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-10">
-      <h1 className="mb-2 text-4xl font-bold text-gray-900">Label Checker</h1>
-      <p className="mb-8 text-xl text-gray-600">
+      <p className="mb-8 text-xl text-bark">
         Drop a label photo below. We check the brand name, alcohol content, net contents, and the
         government warning - and tell you exactly what passed and what didn&apos;t.
       </p>
@@ -103,14 +102,16 @@ export default function Home() {
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles([...e.dataTransfer.files]); }}
-        className={`mb-6 flex min-h-48 cursor-pointer flex-col items-center justify-center rounded-2xl border-4 border-dashed p-8 text-center transition ${
-          dragOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-white hover:border-blue-400'
+        className={`mb-6 flex min-h-48 cursor-pointer flex-col items-center justify-center rounded-2xl border-4 border-dashed p-8 text-center transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bark focus-visible:ring-offset-2 ${
+          dragOver
+            ? 'border-bark bg-parchment'
+            : 'border-bark/40 bg-white hover:border-bark hover:bg-parchment'
         }`}
       >
-        <p className="text-2xl font-semibold text-gray-800">
+        <p className="text-2xl font-semibold text-ink">
           {busy ? 'Checking…' : 'Drop label photos here'}
         </p>
-        <p className="mt-2 text-xl text-gray-500">or click to choose files - one label or hundreds</p>
+        <p className="mt-2 text-xl text-bark">or click to choose files - one label or hundreds</p>
         <input
           ref={inputRef}
           type="file"
@@ -123,7 +124,7 @@ export default function Home() {
 
       {!busy && (
         <div className="mb-6">
-          <p className="mb-2 text-base text-gray-500">No files handy? Run a built-in sample:</p>
+          <p className="mb-2 text-base text-bark">No files handy? Run a built-in sample:</p>
           <div className="flex flex-wrap gap-3">
             <button
               onClick={async () => {
@@ -135,7 +136,7 @@ export default function Home() {
                   setSampleError((err as Error).message);
                 }
               }}
-              className="rounded-lg border border-gray-300 bg-white px-5 py-3 text-lg hover:border-blue-400 disabled:opacity-40"
+              className="rounded-lg border border-bark bg-white px-5 py-3 text-lg text-bark hover:bg-parchment disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bark focus-visible:ring-offset-2"
             >
               Try a clean label
             </button>
@@ -149,7 +150,7 @@ export default function Home() {
                   setSampleError((err as Error).message);
                 }
               }}
-              className="rounded-lg border border-gray-300 bg-white px-5 py-3 text-lg hover:border-blue-400 disabled:opacity-40"
+              className="rounded-lg border border-bark bg-white px-5 py-3 text-lg text-bark hover:bg-parchment disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bark focus-visible:ring-offset-2"
             >
               Try a problem label
             </button>
@@ -170,7 +171,7 @@ export default function Home() {
                   setSampleError((err as Error).message);
                 }
               }}
-              className="rounded-lg border border-gray-300 bg-white px-5 py-3 text-lg hover:border-blue-400 disabled:opacity-40"
+              className="rounded-lg border border-bark bg-white px-5 py-3 text-lg text-bark hover:bg-parchment disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bark focus-visible:ring-offset-2"
             >
               Try a batch of 6
             </button>
@@ -181,23 +182,23 @@ export default function Home() {
         </div>
       )}
 
-      <details className="mb-8 rounded-xl border border-gray-200 bg-white p-5">
-        <summary className="cursor-pointer text-xl font-semibold text-gray-700">
+      <details className="mb-8 rounded-xl border border-bark/20 bg-white p-5">
+        <summary className="cursor-pointer text-xl font-semibold text-bark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bark focus-visible:ring-offset-2">
           Optional: check against application values
         </summary>
         <div className="mt-4 space-y-4">
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-bark">
             For a single label, type the application values. For a batch, upload a CSV with columns:
-            <code className="mx-1 rounded bg-gray-100 px-1">filename, brand_name, class_type, alcohol_percent, net_contents</code>
+            <code className="mx-1 rounded bg-parchment px-1">filename, brand_name, class_type, alcohol_percent, net_contents</code>
           </p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input
-              className="rounded-lg border border-gray-300 p-3 text-lg"
+              className="rounded-lg border border-bark/40 p-3 text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bark focus-visible:ring-offset-2"
               placeholder="Brand name"
               onChange={(e) => setSingleExpected((s) => ({ ...s, brandName: e.target.value || undefined }))}
             />
             <input
-              className="rounded-lg border border-gray-300 p-3 text-lg"
+              className="rounded-lg border border-bark/40 p-3 text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bark focus-visible:ring-offset-2"
               placeholder="Alcohol % (e.g. 45)"
               inputMode="decimal"
               onChange={(e) => {
@@ -206,23 +207,23 @@ export default function Home() {
               }}
             />
             <input
-              className="rounded-lg border border-gray-300 p-3 text-lg"
+              className="rounded-lg border border-bark/40 p-3 text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bark focus-visible:ring-offset-2"
               placeholder="Class/type"
               onChange={(e) => setSingleExpected((s) => ({ ...s, classType: e.target.value || undefined }))}
             />
             <input
-              className="rounded-lg border border-gray-300 p-3 text-lg"
+              className="rounded-lg border border-bark/40 p-3 text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bark focus-visible:ring-offset-2"
               placeholder="Net contents (e.g. 750 mL)"
               onChange={(e) => setSingleExpected((s) => ({ ...s, netContents: e.target.value || undefined }))}
             />
           </div>
-          <label className="block text-lg text-gray-700">
+          <label className="block text-lg text-ink">
             Batch CSV:{' '}
             <input
               type="file"
               accept=".csv,text/csv"
               onChange={(e) => e.target.files?.[0] && onCsv(e.target.files[0])}
-              className="text-lg"
+              className="text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bark focus-visible:ring-offset-2"
             />
             {csvMap && <span className="ml-2 font-semibold text-green-700">{csvMap.size} rows loaded</span>}
           </label>
@@ -230,7 +231,7 @@ export default function Home() {
       </details>
 
       {single?.state === 'pending' && (
-        <p className="text-2xl font-semibold text-gray-500">Reading the label…</p>
+        <p className="text-2xl font-semibold text-bark">Reading the label…</p>
       )}
       {single?.state === 'error' && (
         <p className="rounded-xl bg-red-50 p-5 text-xl font-semibold text-red-800">{single.error}</p>
