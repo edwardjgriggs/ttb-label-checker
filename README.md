@@ -2,6 +2,16 @@
 
 Drop one or more alcohol label images and the app reads every mandatory field using GPT-4o vision, then runs a deterministic rules engine to report pass, fail, or needs-review per TTB check with a plain-English reason. The AI reads; code judges. Batch upload of 200-300 labels is supported with results streaming into the table as they complete.
 
+![TTB Label Checker: drop zone, built-in sample buttons, and streaming batch results](docs/images/hero-top.png)
+
+```mermaid
+flowchart LR
+    A[Browser: downscale + pool of 5] -->|one image per POST| B["/api/verify"]
+    B --> C[GPT-4o vision<br/>strict JSON schema<br/>reads only]
+    C --> D[Rules engine<br/>pure TypeScript, 69 tests<br/>judges everything]
+    D -->|verdict JSON| A
+```
+
 ---
 
 ## Live demo
@@ -20,6 +30,8 @@ Try it with the images in `samples/`:
 | `riverbend.png` | Second valid label for batch demos |
 
 `samples/batch.csv` demonstrates the expected-values flow. Drop all six PNGs, load the CSV, and five labels are cross-checked against their CSV rows for brand, class/type, ABV, and net contents. `wrong-wording.png` intentionally has no CSV row and falls back to rules-only checking automatically. The "Try a batch of 6" button on the live app runs this exact scenario in one click.
+
+![Batch results with an expanded failure: label image beside the per-check verdict](docs/images/hero-results.png)
 
 ---
 
@@ -63,6 +75,17 @@ A check either fails reliably or it does not hard-fail at all. Bold-type detecti
 ### Batch
 
 Each label is one multipart POST to `/api/verify`. The browser orchestrates concurrent uploads with a pool of 5 parallel requests and updates the results table as each response lands. No waiting for the whole batch to finish. The browser also downscales images to a maximum of 1500px on the longest edge before upload, which keeps each request comfortably under Vercel's 4.5MB body limit and reduces vision call latency.
+
+---
+
+## Alternatives considered
+
+- **Azure AI Document Intelligence instead of a vision LLM.** The strongest alternative for a government document-extraction workload: FedRAMP-authorized, lives in the agency's existing Azure tenant, returns per-field confidence scores. It reads text and positions well but does not judge typography nuance (the bold warning header), and custom extraction models need labeled training data. The production-grade answer is a hybrid: Document Intelligence as the deterministic OCR layer, a vision model only for what OCR cannot answer. The `ExtractionProvider` interface accommodates exactly that without touching the rules engine.
+- **Server-side queue for batch instead of client orchestration.** At production scale a 300-label dump becomes: upload to blob storage, queue per label, workers process, agent notified on completion. Resumable and auditable, and it does not depend on a browser tab staying open. Client orchestration was the right prototype call given serverless body limits, and the single-image API contract survives the migration unchanged.
+- **A .NET API instead of Next.js.** TTB's existing systems are .NET, so a C# service would integrate culturally and technically. The rules engine is pure logic and ports in an afternoon. For a one-week prototype with a deployed-URL requirement, Next.js delivered faster; keeping the port cheap was the actual architecture decision.
+- **Fine-tuned or self-hosted models.** Not justified at this scale: 150,000 labels a year is roughly 600 a day, around $6 a day at current GPT-4o pricing. Fine-tuning or self-hosting buys nothing on cost and adds an ML-ops burden a small compliance team should not carry. Data-sovereignty mandates would change that answer; economics will not.
+
+The constant across every alternative: only the reader changes. The deterministic rules engine, its tests, and the verdict semantics survive all four swaps untouched. That separation is the design.
 
 ---
 
