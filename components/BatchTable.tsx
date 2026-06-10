@@ -1,17 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import type { Verdict } from '@/lib/types';
+import type { BatchRow } from '@/lib/types';
+import { buildResultsCsv } from '@/lib/client/exportCsv';
 import { StatusBadge } from './StatusBadge';
 import { ResultCard } from './ResultCard';
 
-export interface BatchRow {
-  fileName: string;
-  state: 'pending' | 'done' | 'error';
-  verdict?: Verdict;
-  error?: string;
-  previewUrl?: string;
-}
+// Re-export so existing imports from this module continue to work.
+export type { BatchRow };
 
 export function BatchTable({ rows }: { rows: BatchRow[] }) {
   const [problemsOnly, setProblemsOnly] = useState(false);
@@ -45,15 +41,32 @@ export function BatchTable({ rows }: { rows: BatchRow[] }) {
             return acc;
           }, [])}
         </p>
-        <label className="flex cursor-pointer items-center gap-3 text-xl">
-          <input
-            type="checkbox"
-            checked={problemsOnly}
-            onChange={(e) => setProblemsOnly(e.target.checked)}
-            className="h-6 w-6"
-          />
-          Show only problems
-        </label>
+        <div className="flex items-center gap-4">
+          <button
+            disabled={rows.some((r) => r.state === 'pending')}
+            onClick={() => {
+              const csv = buildResultsCsv(rows);
+              const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'label-check-results.csv';
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-lg hover:border-blue-400 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Download results CSV
+          </button>
+          <label className="flex cursor-pointer items-center gap-3 text-xl">
+            <input
+              type="checkbox"
+              checked={problemsOnly}
+              onChange={(e) => setProblemsOnly(e.target.checked)}
+              className="h-6 w-6"
+            />
+            Show only problems
+          </label>
+        </div>
       </div>
       <table className="w-full border-collapse text-left">
         <thead>

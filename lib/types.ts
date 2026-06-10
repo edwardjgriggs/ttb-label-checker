@@ -35,3 +35,11 @@ export interface Verdict {
   checks: CheckResult[];
   extracted: ExtractedLabel | null;
 }
+
+export interface BatchRow {
+  fileName: string;
+  state: 'pending' | 'done' | 'error';
+  verdict?: Verdict;
+  error?: string;
+  previewUrl?: string;
+}

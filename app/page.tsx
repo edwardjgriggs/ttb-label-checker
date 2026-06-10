@@ -1,12 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ExpectedValues, Verdict } from '@/lib/types';
+import type { BatchRow, ExpectedValues, Verdict } from '@/lib/types';
 import { downscaleImage } from '@/lib/client/downscale';
 import { runPool } from '@/lib/client/pool';
 import { parseExpectedCsv } from '@/lib/client/csv';
 import { ResultCard } from '@/components/ResultCard';
-import { BatchTable, type BatchRow } from '@/components/BatchTable';
+import { BatchTable } from '@/components/BatchTable';
 
 async function verifyOne(file: File, expected?: ExpectedValues): Promise<Verdict> {
   const image = await downscaleImage(file);
@@ -27,6 +27,7 @@ export default function Home() {
   const [dragOver, setDragOver] = useState(false);
   const [csvMap, setCsvMap] = useState<Map<string, ExpectedValues> | null>(null);
   const [singleExpected, setSingleExpected] = useState<ExpectedValues>({});
+  const [sampleError, setSampleError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   // Tracks blob URLs for the active batch so they can be revoked on next batch or unmount.
   const previewUrlsRef = useRef<string[]>([]);
@@ -39,7 +40,7 @@ export default function Home() {
   }, []);
 
   const handleFiles = useCallback(
-    async (files: File[]) => {
+    async (files: File[], csvOverride?: Map<string, ExpectedValues>) => {
       const images = files.filter((f) => f.type.startsWith('image/'));
       if (!images.length || busy) return;
       setBusy(true);
@@ -51,10 +52,15 @@ export default function Home() {
 
       setRows(images.map((f, idx) => ({ fileName: f.name, state: 'pending' as const, previewUrl: newPreviewUrls[idx] })));
 
+      // Use csvOverride when provided (e.g. from sample buttons) to avoid the
+      // stale-closure problem: calling setCsvMap then handleFiles in the same
+      // tick would read the old csvMap from this callback's closure.
+      const map = csvOverride ?? csvMap;
+
       const expectedFor = (f: File): ExpectedValues | undefined =>
         images.length === 1
           ? Object.values(singleExpected).some((v) => v !== undefined) ? singleExpected : undefined
-          : csvMap?.get(f.name.toLowerCase());
+          : map?.get(f.name.toLowerCase());
 
       await runPool(images, 5, async (file, i) => {
         try {
@@ -114,6 +120,66 @@ export default function Home() {
           onChange={(e) => { handleFiles([...(e.target.files ?? [])]); e.target.value = ''; }}
         />
       </div>
+
+      {!busy && (
+        <div className="mb-6">
+          <p className="mb-2 text-base text-gray-500">No files handy? Run a built-in sample:</p>
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={async () => {
+                setSampleError(null);
+                try {
+                  const blob = await fetch('/samples/valid.png').then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.blob(); });
+                  await handleFiles([new File([blob], 'valid.png', { type: 'image/png' })]);
+                } catch (err) {
+                  setSampleError((err as Error).message);
+                }
+              }}
+              className="rounded-lg border border-gray-300 bg-white px-5 py-3 text-lg hover:border-blue-400 disabled:opacity-40"
+            >
+              Try a clean label
+            </button>
+            <button
+              onClick={async () => {
+                setSampleError(null);
+                try {
+                  const blob = await fetch('/samples/titlecase-warning.png').then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.blob(); });
+                  await handleFiles([new File([blob], 'titlecase-warning.png', { type: 'image/png' })]);
+                } catch (err) {
+                  setSampleError((err as Error).message);
+                }
+              }}
+              className="rounded-lg border border-gray-300 bg-white px-5 py-3 text-lg hover:border-blue-400 disabled:opacity-40"
+            >
+              Try a problem label
+            </button>
+            <button
+              onClick={async () => {
+                setSampleError(null);
+                try {
+                  const names = ['valid.png', 'titlecase-warning.png', 'missing-warning.png', 'wrong-wording.png', 'no-abv.png', 'riverbend.png'];
+                  const [csvText, ...blobs] = await Promise.all([
+                    fetch('/samples/batch.csv').then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.text(); }),
+                    ...names.map((n) => fetch(`/samples/${n}`).then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.blob(); })),
+                  ]);
+                  const parsedMap = parseExpectedCsv(csvText as string);
+                  setCsvMap(parsedMap);
+                  const files = (blobs as Blob[]).map((b, i) => new File([b], names[i], { type: 'image/png' }));
+                  await handleFiles(files, parsedMap);
+                } catch (err) {
+                  setSampleError((err as Error).message);
+                }
+              }}
+              className="rounded-lg border border-gray-300 bg-white px-5 py-3 text-lg hover:border-blue-400 disabled:opacity-40"
+            >
+              Try a batch of 6
+            </button>
+          </div>
+          {sampleError && (
+            <p className="mt-2 text-base font-semibold text-red-700">{sampleError}</p>
+          )}
+        </div>
+      )}
 
       <details className="mb-8 rounded-xl border border-gray-200 bg-white p-5">
         <summary className="cursor-pointer text-xl font-semibold text-gray-700">

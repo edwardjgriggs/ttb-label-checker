@@ -1,6 +1,49 @@
 import type { Verdict } from '@/lib/types';
 import { StatusBadge } from './StatusBadge';
 
+function ExtractedPanel({ verdict }: { verdict: Verdict }) {
+  const e = verdict.extracted;
+  if (!e) return null;
+
+  const notFound = <span className="text-gray-400 italic">not found</span>;
+
+  const headerBoldLabel =
+    e.warning.headerBold === true
+      ? 'yes'
+      : e.warning.headerBold === false
+        ? 'no'
+        : 'could not tell';
+
+  return (
+    <details className="mt-4 rounded-lg border border-gray-200 p-4">
+      <summary className="cursor-pointer text-lg text-gray-600">What the AI read</summary>
+      <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-base">
+        <dt className="font-semibold text-gray-700">Brand name</dt>
+        <dd className="text-gray-600">{e.brandName ?? notFound}</dd>
+
+        <dt className="font-semibold text-gray-700">Class &amp; type</dt>
+        <dd className="text-gray-600">{e.classType ?? notFound}</dd>
+
+        <dt className="font-semibold text-gray-700">Alcohol content</dt>
+        <dd className="text-gray-600">{e.alcoholContent ?? notFound}</dd>
+
+        <dt className="font-semibold text-gray-700">Net contents</dt>
+        <dd className="text-gray-600">{e.netContents ?? notFound}</dd>
+      </dl>
+
+      <div className="mt-3">
+        <p className="text-base font-semibold text-gray-700">Government warning</p>
+        {e.warning.present && e.warning.text
+          ? <p className="text-base text-gray-500 italic">{e.warning.text}</p>
+          : <p className="text-base text-gray-400 italic">not present</p>}
+        <p className="mt-1 text-base text-gray-600">
+          Header bold: {headerBoldLabel}
+        </p>
+      </div>
+    </details>
+  );
+}
+
 export function ResultCard({ verdict, fileName, previewUrl }: { verdict: Verdict; fileName: string; previewUrl?: string }) {
   return (
     <div className="rounded-xl border-2 border-gray-200 bg-white p-6 shadow-sm">
@@ -28,6 +71,7 @@ export function ResultCard({ verdict, fileName, previewUrl }: { verdict: Verdict
           </li>
         ))}
       </ul>
+      <ExtractedPanel verdict={verdict} />
     </div>
   );
 }

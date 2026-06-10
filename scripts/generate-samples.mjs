@@ -48,6 +48,9 @@ function makeLabel({ brand, classType, abv, net, warningHeader, warningBody, hea
 }
 
 mkdirSync('samples', { recursive: true });
+// public/samples/ makes the files web-accessible via Next.js static serving so
+// the "Try it" demo buttons can fetch them from the browser without a separate API route.
+mkdirSync('public/samples', { recursive: true });
 
 const base = {
   brand: 'OLD TOM DISTILLERY',
@@ -68,17 +71,22 @@ const variants = [
 ];
 
 for (const [name, cfg] of variants) {
-  await sharp(Buffer.from(makeLabel(cfg))).png().toFile(`samples/${name}`);
-  console.log(`wrote samples/${name}`);
+  const buf = await sharp(Buffer.from(makeLabel(cfg))).png().toBuffer();
+  writeFileSync(`samples/${name}`, buf);
+  writeFileSync(`public/samples/${name}`, buf);
+  console.log(`wrote samples/${name} and public/samples/${name}`);
 }
 
-writeFileSync(
-  'samples/batch.csv',
-  [
-    'filename,brand_name,class_type,alcohol_percent,net_contents',
-    'valid.png,OLD TOM DISTILLERY,Kentucky Straight Bourbon Whiskey,45,750 mL',
-    'riverbend.png,Riverbend Reserve,Straight Rye Whiskey,40,375 mL',
-    'titlecase-warning.png,OLD TOM DISTILLERY,Kentucky Straight Bourbon Whiskey,45,750 mL',
-  ].join('\n'),
-);
-console.log('wrote samples/batch.csv');
+const csvContent = [
+  'filename,brand_name,class_type,alcohol_percent,net_contents',
+  'valid.png,OLD TOM DISTILLERY,Kentucky Straight Bourbon Whiskey,45,750 mL',
+  'riverbend.png,Riverbend Reserve,Straight Rye Whiskey,40,375 mL',
+  'titlecase-warning.png,OLD TOM DISTILLERY,Kentucky Straight Bourbon Whiskey,45,750 mL',
+  'missing-warning.png,OLD TOM DISTILLERY,Kentucky Straight Bourbon Whiskey,45,750 mL',
+  'wrong-wording.png,OLD TOM DISTILLERY,Kentucky Straight Bourbon Whiskey,45,750 mL',
+  'no-abv.png,OLD TOM DISTILLERY,Kentucky Straight Bourbon Whiskey,45,750 mL',
+].join('\n');
+
+writeFileSync('samples/batch.csv', csvContent);
+writeFileSync('public/samples/batch.csv', csvContent);
+console.log('wrote samples/batch.csv and public/samples/batch.csv');
