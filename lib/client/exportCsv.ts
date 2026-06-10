@@ -1,8 +1,12 @@
 import type { BatchRow } from '@/lib/types';
 
-/** Wrap a value in double quotes, escaping inner double quotes by doubling them. */
+/** Wrap a value in double quotes, escaping inner double quotes by doubling them.
+ *  Prefixes with a single quote if the value starts with a formula-trigger character
+ *  (=, +, -, @, tab, CR) to prevent CSV formula injection in Excel/Sheets (OWASP). */
 function q(value: string): string {
-  return `"${value.replace(/"/g, '""')}"`;
+  // CSV formula injection guard: neutralize leading formula trigger characters
+  const sanitized = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+  return `"${sanitized.replace(/"/g, '""')}"`;
 }
 
 /**

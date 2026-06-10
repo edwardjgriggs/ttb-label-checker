@@ -136,3 +136,62 @@ describe('buildResultsCsv', () => {
     expect(rows[3][0]).toBe('bad.png');
   });
 });
+
+describe('buildResultsCsv – CSV formula injection prevention', () => {
+  it('prefixes filename starting with = to prevent formula execution in spreadsheets', () => {
+    const row: BatchRow = {
+      fileName: '=HYPERLINK("http://evil","x").png',
+      state: 'error',
+      error: 'some error',
+    };
+    const csv = buildResultsCsv([row]);
+    const rawLines = csv.split('\n');
+    // The raw cell in the CSV must start with "'= to show the single-quote prefix is inside the quoted cell
+    expect(rawLines[1].startsWith('"\'=')).toBe(true);
+    // The parsed value should carry the single-quote prefix
+    const [, data] = parseCSV(csv);
+    expect(data[0]).toBe("'=HYPERLINK(\"http://evil\",\"x\").png");
+  });
+
+  it('prefixes a reason containing leading + to prevent formula execution', () => {
+    const row: BatchRow = {
+      fileName: 'normal.png',
+      state: 'done',
+      verdict: {
+        overall: 'fail',
+        extracted: null,
+        checks: [
+          { id: 'brand_name',         label: 'Brand name',         status: 'fail',   reason: '+5% alcohol discrepancy' },
+          { id: 'class_type',         label: 'Class & type',       status: 'pass',   reason: 'Matches' },
+          { id: 'alcohol_content',    label: 'Alcohol content',    status: 'pass',   reason: 'Present' },
+          { id: 'net_contents',       label: 'Net contents',       status: 'pass',   reason: 'Present' },
+          { id: 'government_warning', label: 'Government warning', status: 'pass',   reason: 'Correct' },
+        ],
+      },
+    };
+    const csv = buildResultsCsv([row]);
+    const [, data] = parseCSV(csv);
+    // details cell should have the prefixed reason
+    expect(data[7]).toBe("'+5% alcohol discrepancy");
+  });
+
+  it('does NOT prefix a normal cell value (no regression)', () => {
+    const csv = buildResultsCsv([PASS_ROW]);
+    const [, data] = parseCSV(csv);
+    // filename "valid.png" must not gain a spurious prefix
+    expect(data[0]).toBe('valid.png');
+    expect(data[7]).toBe('all checks passed');
+  });
+
+  it('prefixes a cell whose value is just a minus sign (-)', () => {
+    const row: BatchRow = {
+      fileName: '-.png',
+      state: 'error',
+      error: '-',
+    };
+    const csv = buildResultsCsv([row]);
+    const [, data] = parseCSV(csv);
+    expect(data[0]).toBe("'-.png");
+    expect(data[7]).toBe("'-");
+  });
+});
