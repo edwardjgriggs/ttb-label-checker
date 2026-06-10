@@ -6,7 +6,7 @@ Drop one or more alcohol label images and the app reads every mandatory field us
 
 ## Live demo
 
-Deployed at: _(URL added after deploy)_
+Deployed at: **https://ttb-label-checker-iota.vercel.app**
 
 Try it with the images in `samples/`:
 
